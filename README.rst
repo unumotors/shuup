@@ -10,6 +10,11 @@ Shuup is an Open Source E-Commerce Platform based on Django and Python.
 
 https://shuup.com/
 
+Unu Fork
+---------
+
+Shuup was forked by unu with Version 1.2b8 and now will be extended with unu features. Future consideration is to update from mainline once shuup 2.0 will be released (see https://github.com/shuup/shuup)
+
 Copyright
 ---------
 

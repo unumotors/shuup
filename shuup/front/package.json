@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm i && bower install --config.interactive=false && gulp"
+    "build": "npm i && bower install --allow-root --config.interactive=false && gulp"
   },
   "author": "",
   "license": "OSL-3.0",

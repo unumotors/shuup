@@ -4,7 +4,7 @@
   "description": "Shuup XTheme Editor",
   "main": "webpack.config.js",
   "scripts": {
-    "build": "npm i && bower install --config.interactive=false && gulp --production",
+    "build": "npm i && bower install --allow-root --config.interactive=false && gulp --production",
     "watch": "gulp watch",
     "lint": "eslint static_src"
   },

@@ -558,7 +558,7 @@ class Order(MoneyPropped, models.Model):
     def can_create_payment(self):
         return not(self.is_paid() or self.is_canceled())
 
-    def create_payment(self, amount, payment_identifier=None, description=''):
+    def create_payment(self, amount, expected_amount=0, note=None, payment_identifier=None, description=''):
         """
         Create a payment with given amount for this order.
 
@@ -606,6 +606,9 @@ class Order(MoneyPropped, models.Model):
         payment = self.payments.create(
             payment_identifier=payment_identifier,
             amount_value=amount.value,
+            expected_amount_value=expected_amount,
+            currency=self.currency,
+            note=note,
             description=description,
         )
 

@@ -1,0 +1,25 @@
+{% csrf_token %}
+<script>
+  var $ = jQuery
+  $('.send-refund').click(function () {
+    $(this).addClass('disabled');
+    var csrftoken = jQuery('[name=csrfmiddlewaretoken]').val();
+    var thisElem = $(this);
+    var refundUrl = thisElem.attr('data-refund-url');
+    var pspReference = thisElem.attr('data-psp-reference');
+    var amount = $('[data-refund-value=' + pspReference + ']').val();
+    $.ajax(refundUrl, {
+      method: 'POST',
+      data: {
+        'amount': amount
+      },
+      beforeSend: function (xhr, settings) {
+        xhr.setRequestHeader('X-CSRFToken', csrftoken);
+      },
+      success: function (response) {
+        thisElem.parent().parent().before(response);
+        thisElem.removeClass('disabled');
+      }
+    })
+  })
+</script>

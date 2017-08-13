@@ -19,6 +19,7 @@ class PaymentOrderSection(Section):
     name = _("Payments")
     icon = "fa-dollar"
     template = "shuup/admin/orders/_detail_payments.jinja"
+    extra_js = "shuup/admin/orders/_detail_payments_extra_js.jinja"
     order = 1
 
     @staticmethod

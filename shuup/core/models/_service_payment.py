@@ -185,6 +185,8 @@ class CustomPaymentProcessor(PaymentProcessor):
                     description="Cash Payment"
                 )
 
+    def refund(self):
+        print('refund dummy')
 
 PaymentMethodLogEntry = define_log_model(PaymentMethod)
 PaymentProcessorLogEntry = define_log_model(PaymentProcessor)

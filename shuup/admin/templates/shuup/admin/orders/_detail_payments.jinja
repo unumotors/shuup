@@ -2,42 +2,66 @@
     <table class="table table-striped {% if not payments %} hidden {% endif %}">
         <thead>
         <tr>
+            <th>{% trans %}Type{% endtrans %}</th>
             <th>{% trans %}Date{% endtrans %}</th>
             <th>{% trans %}Identifier{% endtrans %}</th>
-            <th>{% trans %}Description{% endtrans %}</th>
-            <th class="text-right">{% trans %}Amount{% endtrans %}</th>
+            <th>{% trans %}Payment Method{% endtrans %}</th>
+            <th>{% trans %}Status{% endtrans %}</th>
+            <th>{% trans %}PSP Reference{% endtrans %}</th>
+            <th class="text-right">{% trans %}Expected Amount{% endtrans %}</th>
+            <th class="text-right">{% trans %}Captured Amount{% endtrans %}</th>
         </tr>
         </thead>
         <tbody>
         {% for payment in payments %}
-            <tr>
+            {% set row_class = loop.cycle('odd', 'even') %}
+            <tr class="{{ row_class }}">
+                <td>
+                    {{ payment.type }}
+                    {% if payment.note %}
+                        <span class="help-popover-btn">
+                            <a data-toggle="popover" data-placement="bottom" role="button" tabindex="50000" data-html="true" data-trigger="focus" title="" data-content="{{ payment.note }}" data-original-title="{% trans %}Note{% endtrans %}">
+                                <i class="fa fa-exclamation-circle"></i>
+                            </a>
+                        </span>
+                    {% endif %}
+                </td>
                 <td>{{ payment.created_on|datetime }}</td>
                 <td>{{ payment.payment_identifier }}</td>
-                <td>{{ payment.description }}</td>
-                <td class="text-right">{{ payment.amount|money }}</td>
+                <td>{% if payment.payment_method %}{{ payment.payment_method.name }}{% else %}{% trans %}Manual{% endtrans %}{% endif %}</td>
+                <td>{{ payment.state }}</td>
+                <td>{{ payment.psp_reference }}</td>
+                <td class="text-right">{{ payment.expected_amount | money }}</td>
+                <td class="text-right">{{ payment.amount | money }}</td>
             </tr>
+            {% for refund in payment.refunds.order_by('created_on') %}
+                <tr class="{{ row_class }}">
+                    <td>↳ {{ refund.type }}</td>
+                    <td>{{ refund.payment.created_on|datetime }}</td>
+                    <td>{{ refund.payment.payment_identifier }}</td>
+                    <td>{{ refund.payment_method.name }}</td>
+                    <td>{{ refund.state }}</td>
+                    <td>{{ refund.psp_reference }}</td>
+                    <td class="text-right">{{ refund.expected_amount | money }}</td>
+                    <td class="text-right">{{ refund.payment.amount | money }}</td>
+                </tr>
+            {% endfor %}
+            {% if payment.refundable %}
+                <tr>
+                    <td colspan="6" class="align-middle text-right"><span>{% trans %}Send Refund{% endtrans %}</span></td>
+                    <td><input data-refund-value="{{ payment.psp_reference }}" title="refund-amount"
+                               class="form-control" type="number" min="0" step="any"></td>
+                    <td class="text-right"><a class="btn btn-info send-refund"
+                                              data-psp-reference="{{ payment.psp_reference }}"
+                                              data-refund-url="{{ url('shuup:order.payment.refund', pk=payment.pk) }}">
+                        {% trans %}Refund{% endtrans %}</a></td>
+                </tr>
+            {% endif %}
         {% endfor %}
         </tbody>
     </table>
 </div>
-<div class="visible-xs mobile-list-group {% if not payments %} hidden {% endif %}">
-    <ul class="list-group">
-        {% for payment in payments %}
-            <li class="list-group-item">
-                <div class="row">
-                    <div class="col-xs-8">
-                        {{ payment.created_on|datetime }}<br>
-                        {{ payment.description }}<br>
-                        {% trans %}Identifier{% endtrans %}: {{ payment.payment_identifier }}
-                    </div>
-                    <div class="col-xs-4 text-right">
-                        <strong>{{ payment.amount|money }}</strong>
-                    </div>
-                </div>
-            </li>
-        {% endfor %}
-    </ul>
-</div>
+
 {% if not payments %}
     <div id="no-payments-text">
         <p>{% trans %}No payments have been created yet.{% endtrans %}</p>

@@ -10,14 +10,16 @@ from __future__ import unicode_literals
 from django import forms
 from django.contrib import messages
 from django.http.response import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext as _
 from django.views.generic import DetailView, UpdateView
+from django.views.generic.base import View
 
 from shuup.admin.toolbar import PostActionButton, Toolbar
 from shuup.admin.utils.forms import add_form_errors_as_messages
 from shuup.admin.utils.urls import get_model_url
 from shuup.core.excs import NoPaymentToCreateException
-from shuup.core.models import Order, PaymentStatus
+from shuup.core.models import Order, PaymentStatus, Payment
 from shuup.utils.money import Money
 
 
@@ -48,6 +50,16 @@ class OrderCreatePaymentView(UpdateView):
     def get_form(self, form_class):
         form = super(OrderCreatePaymentView, self).get_form(form_class)
         order = self.object
+        form.fields['note'] = forms.CharField(
+            required=False,
+            widget=forms.Textarea(
+                attrs={
+                    'placeholder': _('Enter a note, for example a custom payment'
+                                     ' identifier or a description of this payment')
+                }
+            ),
+            label=_('Note'),
+        )
         form.fields["amount"] = forms.DecimalField(
             required=True,
             min_value=0,
@@ -68,7 +80,8 @@ class OrderCreatePaymentView(UpdateView):
             messages.error(self.request, _("Payment amount cannot be 0"))
             return self.form_invalid(form)
         try:
-            payment = order.create_payment(amount, description="Manual payment")
+            payment = order.create_payment(amount, expected_amount=amount, note=form.cleaned_data['note'],
+                                           description="Manual payment")
             messages.success(self.request, _("Payment %s created.") % payment.payment_identifier)
         except NoPaymentToCreateException:
             messages.error(self.request, _("Order has already been paid"))
@@ -97,3 +110,18 @@ class OrderSetPaidView(DetailView):
             order.create_payment(amount, description=_("Zero amount payment"))
             messages.success(self.request, _("Order marked as paid."))
         return HttpResponseRedirect(get_model_url(self.get_object()))
+
+
+class RefundView(DetailView):
+    model = Payment
+    template = 'shuup_unu/partials/refund-row.jinja'
+
+    def post(self, request, *args, **kwargs):
+        payment = self.object = self.get_object()
+        refund = payment.payment_method.provider.refund(
+            payment, Money(
+                request.POST['amount'],
+                payment.extended_payment.currency
+            )
+        )
+        return render(request, self.template, {'refund': refund})

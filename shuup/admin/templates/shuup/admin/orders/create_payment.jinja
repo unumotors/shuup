@@ -12,6 +12,7 @@
                     <div class="text-center"><button id="total-unpaid" class="btn btn-info" value="{{ order.get_total_unpaid_amount().value }}" type="button">Get Remaining Total</button></div>
                 </div>
                 <hr>
+                {{ bs3.field(form.note) }}
                 {{ bs3.field(form.amount) }}
             </form>
         </div>

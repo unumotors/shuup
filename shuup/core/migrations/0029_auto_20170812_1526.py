@@ -8,6 +8,7 @@ import django.db.models.deletion
 import enumfields.fields
 import shuup.core.fields
 import shuup.core.models._payments
+from django.db.utils import IntegrityError
 
 
 def copy_currency(apps, schema_editor):
@@ -17,7 +18,7 @@ def copy_currency(apps, schema_editor):
         try:
             obj.currency = obj.order.currency
             obj.save()
-        except ObjectDoesNotExist:
+        except (ObjectDoesNotExist, IntegrityError):
             pass
 
 

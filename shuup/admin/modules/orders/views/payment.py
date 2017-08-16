@@ -80,7 +80,7 @@ class OrderCreatePaymentView(UpdateView):
             messages.error(self.request, _("Payment amount cannot be 0"))
             return self.form_invalid(form)
         try:
-            payment = order.create_payment(amount, expected_amount=amount, note=form.cleaned_data['note'],
+            payment = order.create_payment(amount, expected_amount=amount.value, note=form.cleaned_data['note'],
                                            description="Manual payment")
             messages.success(self.request, _("Payment %s created.") % payment.payment_identifier)
         except NoPaymentToCreateException:

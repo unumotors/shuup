@@ -85,7 +85,7 @@ class Payment(AbstractPayment):
     state = EnumIntegerField(PaymentStates, default=PaymentStates.NONE)
     type = EnumIntegerField(PaymentTypes, default=PaymentTypes.PAYMENT)
     expected_amount = MoneyProperty('expected_amount_value', 'currency')
-    expected_amount_value = MoneyValueField(verbose_name=_('amount'))
+    expected_amount_value = MoneyValueField(verbose_name=_('expected amount'))
 
     def refund(self, amount):
         self.payment_method.payment_processor.refund(self.psp_reference, amount)

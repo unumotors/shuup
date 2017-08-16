@@ -11,6 +11,7 @@ from django.utils.translation import ugettext as _
 
 from shuup.admin.base import Section
 from shuup.core.models import Shipment
+from shuup.core.models._payments import PaymentTypes
 from shuup.core.models._orders import OrderLogEntry
 
 
@@ -28,7 +29,7 @@ class PaymentOrderSection(Section):
 
     @staticmethod
     def get_context_data(order):
-        return order.payments.all()
+        return order.payments.filter(type=PaymentTypes.PAYMENT)
 
 
 class ShipmentSection(Section):

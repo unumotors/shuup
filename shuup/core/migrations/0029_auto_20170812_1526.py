@@ -18,8 +18,9 @@ def copy_currency(apps, schema_editor):
         try:
             obj.currency = obj.order.currency
             obj.save()
-        except (ObjectDoesNotExist, IntegrityError):
-            pass
+        except ObjectDoesNotExist:
+            obj.currency = 'NA'
+            obj.save()
 
 
 class Migration(migrations.Migration):

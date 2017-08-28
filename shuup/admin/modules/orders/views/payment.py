@@ -121,7 +121,7 @@ class RefundView(DetailView):
         refund = payment.payment_method.provider.refund(
             payment, Money(
                 request.POST['amount'],
-                payment.extended_payment.currency
+                payment.currency
             )
         )
         return render(request, self.template, {'refund': refund})

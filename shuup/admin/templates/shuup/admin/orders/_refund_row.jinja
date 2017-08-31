@@ -1,0 +1,10 @@
+<tr>
+    <td>↳  {{ refund.type }}</td>
+    <td>{{ refund.created_on|datetime }}</td>
+    <td>{{ refund.payment_identifier }}</td>
+    <td>{{ refund.payment_method.name }}</td>
+    <td>{{ refund.state }}</td>
+    <td>{{ refund.psp_reference }}</td>
+    <td class="text-right">{{ refund.expected_amount | money }}</td>
+    <td class="text-right">{{ refund.amount | money }}</td>
+</tr>

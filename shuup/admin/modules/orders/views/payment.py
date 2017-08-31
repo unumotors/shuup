@@ -114,7 +114,7 @@ class OrderSetPaidView(DetailView):
 
 class RefundView(DetailView):
     model = Payment
-    template = 'shuup_unu/partials/refund-row.jinja'
+    template = 'shuup/admin/orders/_refund_row.jinja'
 
     def post(self, request, *args, **kwargs):
         payment = self.object = self.get_object()

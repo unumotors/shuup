@@ -390,21 +390,10 @@ class ShopProduct(MoneyPropped, models.Model):
             raise ProductNotVisibleProblem(message.args[0])
 
     def is_orderable(self, supplier, customer, quantity, allow_cache=True):
-        key, val = context_cache.get_cached_value(
-            identifier="is_orderable", item=self, context={"customer": customer},
-            supplier=supplier, quantity=quantity, allow_cache=allow_cache)
-        if customer and val is not None:
-            return val
-
         if not supplier:
             supplier = self.suppliers.first()  # TODO: Allow multiple suppliers
         for message in self.get_orderability_errors(supplier=supplier, quantity=quantity, customer=customer):
-            if customer:
-                context_cache.set_cached_value(key, False)
             return False
-
-        if customer:
-            context_cache.set_cached_value(key, True)
         return True
 
     def is_visible(self, customer):

@@ -51,9 +51,11 @@ class TaxModule(six.with_metaclass(abc.ABCMeta)):
 
     def get_context_from_request(self, request):
         customer = getattr(request, "customer", None)
-        return self.get_context_from_data(customer=customer)
+        shop = getattr(request, "shop", None)
+        return self.get_context_from_data(customer=customer, shop=shop)
 
     def get_context_from_data(self, **context_data):
+        shop = context_data.get("shop", None)
         customer = context_data.get("customer")
         customer_tax_group = (
             context_data.get("customer_tax_group") or
@@ -69,11 +71,12 @@ class TaxModule(six.with_metaclass(abc.ABCMeta)):
             customer_tax_group=customer_tax_group,
             customer_tax_number=customer_tax_number,
             location=location,
+            shop=shop
         )
 
     def get_context_from_order_source(self, source):
         return self.get_context_from_data(
-            customer=source.customer, location=source.shipping_address)
+            customer=source.customer, location=source.shipping_address, shop=source.shop)
 
     def add_taxes(self, source, lines):
         """

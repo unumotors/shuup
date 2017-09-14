@@ -22,6 +22,7 @@ class TaxRuleForm(forms.ModelForm):
         fields = [
             "tax_classes",
             "customer_tax_groups",
+            "shops",
             "country_codes_pattern",
             "region_codes_pattern",
             "postal_codes_pattern",
@@ -31,6 +32,9 @@ class TaxRuleForm(forms.ModelForm):
             "enabled",
         ]
         help_texts = {
+            "shops": string_concat(
+                _("Note that if you set a shop the tax rule will be applied in such without further region checking")
+            ),
             "country_codes_pattern": string_concat(
                 PATTERN_SYNTAX_HELP_TEXT,
                 " ",

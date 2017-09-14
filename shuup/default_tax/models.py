@@ -38,6 +38,7 @@ class TaxRule(models.Model):
         CustomerTaxGroup, blank=True,
         verbose_name=_("customer tax groups"),
         help_text=_("The customer tax groups for which this tax rule is limited."))
+    shops = models.ManyToManyField('shuup.Shop')
     country_codes_pattern = models.CharField(
         max_length=300, blank=True,
         verbose_name=_("country codes pattern"))
@@ -80,6 +81,8 @@ class TaxRule(models.Model):
             if tax_groups:
                 if taxing_context.customer_tax_group not in tax_groups:
                     return False
+        if self.shops.filter(id=taxing_context.shop.id):
+            return True
         if self.country_codes_pattern:
             if not pattern_matches(self.country_codes_pattern, taxing_context.country_code):
                 return False

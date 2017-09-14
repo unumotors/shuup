@@ -38,7 +38,7 @@ class TaxRule(models.Model):
         CustomerTaxGroup, blank=True,
         verbose_name=_("customer tax groups"),
         help_text=_("The customer tax groups for which this tax rule is limited."))
-    shops = models.ManyToManyField('shuup.Shop')
+    shops = models.ManyToManyField('shuup.Shop', blank=True)
     country_codes_pattern = models.CharField(
         max_length=300, blank=True,
         verbose_name=_("country codes pattern"))

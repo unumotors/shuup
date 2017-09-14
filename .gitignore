@@ -10,6 +10,7 @@
 *.so
 *.spec
 *.sqlite3
+*.swp
 .cache
 .coverage
 .idea
@@ -19,10 +20,8 @@
 /doccov.html
 /venv*
 __pycache__/
-build/
 coverage.xml
 develop-eggs/
-dist/
 docs/_build/
 downloads/
 eggs/
@@ -35,8 +34,6 @@ nosetests.xml
 parts/
 pip-delete-this-directory.txt
 pip-log.txt
-sdist/
-target/
 var/
 node_modules
 .DS_Store

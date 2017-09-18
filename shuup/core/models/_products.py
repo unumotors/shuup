@@ -41,6 +41,8 @@ class ProductMode(Enum):
     VARIABLE_VARIATION_PARENT = 3
     VARIATION_CHILD = 4
     SUBSCRIPTION = 5  # This is like package_parent and all the functionality is same under the hood.
+    PRODUCT_MODIFICATION_CHILD = 6
+    PRODUCT_MODIFICATION_BASE = 7
 
     class Labels:
         NORMAL = _('normal')
@@ -49,6 +51,8 @@ class ProductMode(Enum):
         VARIABLE_VARIATION_PARENT = _('variation parent (variable)')
         VARIATION_CHILD = _('variation child')
         SUBSCRIPTION = _('subscription')
+        PRODUCT_MODIFICATION_CHILD = _('product modification child')
+        PRODUCT_MODIFICATION_BASE = _('product modification base')
 
 
 class ProductVisibility(Enum):
@@ -200,6 +204,10 @@ class Product(TaxableItem, AttributableMixin, TranslatableModel):
 
     # Behavior
     mode = EnumIntegerField(ProductMode, default=ProductMode.NORMAL, verbose_name=_('mode'))
+    modification_parent = models.ForeignKey(
+        "self", null=True, blank=True, related_name='modification_children',
+        on_delete=models.CASCADE,
+        verbose_name=_('modification parent'))
     variation_parent = models.ForeignKey(
         "self", null=True, blank=True, related_name='variation_children',
         on_delete=models.PROTECT,

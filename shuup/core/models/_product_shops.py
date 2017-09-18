@@ -293,6 +293,9 @@ class ShopProduct(MoneyPropped, models.Model):
                 code="invalid_supplier"
             )
 
+        if self.product.mode == ProductMode.PRODUCT_MODIFICATION_BASE:
+            yield ValidationError(_("Product modification bases are not sellable"), code="modificationbase_not_sellable")
+
         if self.product.mode == ProductMode.SIMPLE_VARIATION_PARENT:
             sellable = False
             for child_product in self.product.variation_children.all():
@@ -306,7 +309,7 @@ class ShopProduct(MoneyPropped, models.Model):
                     sellable = True
                     break
             if not sellable:
-                yield ValidationError(_("Product has no sellable children"), code="no_sellable_children")
+
         elif self.product.mode == ProductMode.VARIABLE_VARIATION_PARENT:
             from shuup.core.models import ProductVariationResult
             sellable = False

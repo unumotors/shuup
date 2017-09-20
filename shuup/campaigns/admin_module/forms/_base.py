@@ -43,9 +43,10 @@ class BaseCampaignForm(ShuupAdminForm):
 
 class CampaignsSelectMultipleField(Select2MultipleField):
     def __init__(self, campaign_model, *args, **kwargs):
+        lookup_property = getattr(campaign_model(), 'lookup_property', 'name')
         super(CampaignsSelectMultipleField, self).__init__(
             model=campaign_model.model, label=campaign_model.name,
-            help_text=campaign_model().description, *args, **kwargs
+            help_text=campaign_model().description, label_attr=lookup_property, *args, **kwargs
         )
 
 

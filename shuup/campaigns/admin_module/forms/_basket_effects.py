@@ -7,7 +7,7 @@
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
-from shuup.admin.forms.fields import PercentageField
+from shuup.admin.forms.fields import PercentageField, Select2MultipleField
 from shuup.campaigns.models.basket_effects import (
     BasketDiscountAmount, BasketDiscountPercentage
 )
@@ -35,6 +35,7 @@ class BasketDiscountPercentageForm(BaseEffectModelForm):
 
 
 class FreeProductLineForm(BaseEffectModelForm):
+
     class Meta(BaseEffectModelForm.Meta):
         model = FreeProductLine
 

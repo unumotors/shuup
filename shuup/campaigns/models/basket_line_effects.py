@@ -46,6 +46,10 @@ class FreeProductLine(BasketLineEffect):
         return _("Select product(s) to give free.")
 
     @property
+    def lookup_property(self):
+        return 'sku'
+
+    @property
     def values(self):
         return self.products
 
@@ -98,6 +102,10 @@ class DiscountFromProduct(BasketLineEffect):
     @property
     def description(self):
         return _("Select discount amount and products.")
+
+    @property
+    def label_property(self):
+        return 'sku'
 
     def get_discount_lines(self, order_source, original_lines):
         product_ids = self.products.values_list("pk", flat=True)

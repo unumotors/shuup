@@ -20,7 +20,8 @@ function activateSelect($select, model, attrs={}) {
             url: "/sa/select",
             dataType: "json",
             data: function(params) {
-                return {model: model, search: params.term};
+                debugger
+                return {model: model, search: params.term, label_attr: attrs.label};
             },
             processResults: function (data) {
                 return {
@@ -39,7 +40,8 @@ function activateSelects() {
         // only activate selects that aren't already select2 inputs
         if (!select.hasClass("select2-hidden-accessible") && !select.hasClass("no-select2")) {
             const model = select.data("model");
-            activateSelect(select, model);
+            const label = select.data("label");
+            activateSelect(select, model, {"label": label});
         }
     });
 }

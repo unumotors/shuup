@@ -157,6 +157,10 @@ class ProductsInBasketCondition(BasketCondition):
         return _("Limit the campaign to have the selected products in basket.")
 
     @property
+    def lookup_property(self):
+        return 'sku'
+
+    @property
     def values(self):
         return self.products
 

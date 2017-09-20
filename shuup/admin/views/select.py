@@ -79,6 +79,7 @@ class MultiselectAjaxView(TemplateView):
         self.init_search_fields(cls)
         if not self.search_fields:
             return [{"id": None, "name": _("Couldn't get selections for %s.") % model_name}]
+        label_attr = request.GET.get("label_attr", None)
         if request.GET.get("search"):
             query = Q()
             keyword = request.GET.get("search", "").strip()
@@ -87,7 +88,8 @@ class MultiselectAjaxView(TemplateView):
             if issubclass(cls, Contact) or issubclass(cls, get_user_model()):
                 query &= Q(is_active=True)
             qs = qs.filter(query).distinct()
-        return [{"id": obj.id, "name": force_text(obj)} for obj in qs[:self.result_limit]]
+        return [{"id": obj.id, "name": getattr(obj, label_attr) if label_attr else force_text(obj)}
+                for obj in qs[:self.result_limit]]
 
     def get(self, request, *args, **kwargs):
         return JsonResponse({"results": self.get_data(request, *args, **kwargs)})

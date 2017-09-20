@@ -7,6 +7,7 @@
 from decimal import Decimal
 from numbers import Number
 
+import logging
 from django.forms import DecimalField, Field, SelectMultiple
 
 
@@ -35,11 +36,17 @@ class PercentageField(DecimalField):
         return attrs
 
 
+logger = logging.getLogger(__name__)
+
+
 class Select2MultipleField(Field):
     widget = SelectMultiple
 
     def __init__(self, model, *args, **kwargs):
         self.model = model
+        self.label_attr = kwargs.pop('label_attr', None)
+
+        logger.warning('Field init: {} {} '.format(self.model, self.label_attr))
         super(Select2MultipleField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
@@ -51,5 +58,10 @@ class Select2MultipleField(Field):
     def widget_attrs(self, widget):
         attrs = super(Select2MultipleField, self).widget_attrs(widget)
         model_name = "%s.%s" % (self.model._meta.app_label, self.model._meta.model_name)
-        attrs.update({"data-model": model_name})
+
+        logger.warning('Widget_Attrs: {} {} '.format(model_name, self.label_attr))
+        attrs.update({
+            "data-model": model_name,
+            "data-label": self.label_attr
+        })
         return attrs

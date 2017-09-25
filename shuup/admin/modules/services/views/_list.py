@@ -12,10 +12,10 @@ from django.utils.text import force_text
 from django.utils.translation import ugettext_lazy as _
 
 from shuup.admin.utils.picotable import (
-    Column, TextFilter, true_or_false_filter
+    Column, TextFilter, true_or_false_filter, Select2Filter
 )
 from shuup.admin.utils.views import PicotableListView
-from shuup.core.models import PaymentMethod, ShippingMethod
+from shuup.core.models import PaymentMethod, ShippingMethod, Shop
 
 
 class ServiceListView(PicotableListView):
@@ -31,7 +31,7 @@ class ServiceListView(PicotableListView):
             sortable=False,
         ),
         Column("enabled", _(u"Enabled"), filter_config=true_or_false_filter),
-        Column("shop", _(u"Shop"))
+        Column("shop", _(u"Shop"), filter_config=Select2Filter(choices=Shop.objects.all()))
     ]
 
     def get_object_abstract(self, instance, item):

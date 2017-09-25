@@ -81,8 +81,13 @@ class TaxRule(models.Model):
             if tax_groups:
                 if taxing_context.customer_tax_group not in tax_groups:
                     return False
-        if self.shops.filter(id=taxing_context.shop.id):
-            return True
+        applies_to_shop = self.shops.filter(id=taxing_context.shop.id).exists()
+        if self.shops.all().exists():
+            if applies_to_shop:
+                return True
+            else:
+                return False
+            
         if self.country_codes_pattern:
             if not pattern_matches(self.country_codes_pattern, taxing_context.country_code):
                 return False

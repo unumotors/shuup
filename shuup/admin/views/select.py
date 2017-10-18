@@ -43,53 +43,53 @@ class MultiselectAjaxView(TemplateView):
 
         Other fields will be used for already known `cls` instances.
         """
-        if hasattr(cls, "search_fields"):
+        if hasattr(cls, 'search_fields'):
             self.search_fields = cls.search_fields
             return
 
         self.search_fields = []
-        key = "%sname" % ("translations__" if hasattr(cls, "translations") else "")
+        key = '%sname' % ('translations__' if hasattr(cls, 'translations') else '')
         self.search_fields.append(key)
 
         if issubclass(cls, Carrier):
-            self.search_fields.append("base_translations__name")
-            self.search_fields.remove("name")
+            self.search_fields.append('base_translations__name')
+            self.search_fields.remove('name')
         if issubclass(cls, Contact):
-            self.search_fields.append("email")
+            self.search_fields.append('email')
         if issubclass(cls, Product):
-            self.search_fields.append("sku")
-            self.search_fields.append("barcode")
+            self.search_fields.append('sku')
+            self.search_fields.append('barcode')
         user_model = get_user_model()
         if issubclass(cls, user_model):
-            if _field_exists(user_model, "username"):
-                self.search_fields.append("username")
-            if _field_exists(user_model, "email"):
-                self.search_fields.append("email")
-            if not _field_exists(user_model, "name"):
-                self.search_fields.remove("name")
+            if _field_exists(user_model, 'username'):
+                self.search_fields.append('username')
+            if _field_exists(user_model, 'email'):
+                self.search_fields.append('email')
+            if not _field_exists(user_model, 'name'):
+                self.search_fields.remove('name')
 
     def get_data(self, request, *args, **kwargs):
-        model_name = request.GET.get("model")
+        model_name = request.GET.get('model')
         if not model_name:
             return []
         cls = apps.get_model(model_name)
         qs = cls.objects.all()
-        if hasattr(cls.objects, "all_except_deleted"):
+        if hasattr(cls.objects, 'all_except_deleted'):
             qs = cls.objects.all_except_deleted()
         self.init_search_fields(cls)
         if not self.search_fields:
-            return [{"id": None, "name": _("Couldn't get selections for %s.") % model_name}]
-        label_attr = request.GET.get("label_attr", None)
-        if request.GET.get("search"):
+            return [{'id': None, 'name': _('Couldn\'t get selections for %s.') % model_name}]
+        label_attr = request.GET.get('label_attr', 'name')
+        if request.GET.get('search'):
             query = Q()
-            keyword = request.GET.get("search", "").strip()
+            keyword = request.GET.get('search', '').strip()
             for field in self.search_fields:
-                query |= Q(**{"%s__icontains" % field: keyword})
+                query |= Q(**{'%s__icontains' % field: keyword})
             if issubclass(cls, Contact) or issubclass(cls, get_user_model()):
                 query &= Q(is_active=True)
             qs = qs.filter(query).distinct()
-        return [{"id": obj.id, "name": getattr(obj, label_attr) if label_attr else force_text(obj)}
+        return [{'id': obj.id, 'name': getattr(obj, label_attr) if label_attr else force_text(obj)}
                 for obj in qs[:self.result_limit]]
 
     def get(self, request, *args, **kwargs):
-        return JsonResponse({"results": self.get_data(request, *args, **kwargs)})
+        return JsonResponse({'results': self.get_data(request, *args, **kwargs)})

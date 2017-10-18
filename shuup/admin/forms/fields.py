@@ -46,7 +46,6 @@ class Select2MultipleField(Field):
         self.model = model
         self.label_attr = kwargs.pop('label_attr', None)
 
-        logger.warning('Field init: {} {} '.format(self.model, self.label_attr))
         super(Select2MultipleField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
@@ -59,9 +58,11 @@ class Select2MultipleField(Field):
         attrs = super(Select2MultipleField, self).widget_attrs(widget)
         model_name = "%s.%s" % (self.model._meta.app_label, self.model._meta.model_name)
 
-        logger.warning('Widget_Attrs: {} {} '.format(model_name, self.label_attr))
         attrs.update({
-            "data-model": model_name,
-            "data-label": self.label_attr
+            'data-model': model_name
         })
+        if self.label_attr:
+            attrs.update({
+                'data-label': self.label_attr
+            })
         return attrs

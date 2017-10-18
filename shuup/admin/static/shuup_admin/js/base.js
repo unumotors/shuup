@@ -907,7 +907,6 @@ function activateSelect($select, model) {
             url: "/sa/select",
             dataType: "json",
             data: function data(params) {
-                debugger;
                 return { model: model, search: params.term, label_attr: attrs.label };
             },
             processResults: function processResults(data) {

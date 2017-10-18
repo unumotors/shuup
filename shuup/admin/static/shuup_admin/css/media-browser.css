@@ -209,34 +209,16 @@
 }
 @keyframes uploadIndicator {
   0% {
-    -webkit-transform: scale(1);
     transform: scale(1);
   }
   40% {
-    -webkit-transform: scale(0.9);
     transform: scale(0.9);
   }
   100% {
-    -webkit-transform: scale(1);
-    transform: scale(1);
-  }
-}
-@-webkit-keyframes uploadIndicator {
-  0% {
-    -webkit-transform: scale(1);
-    transform: scale(1);
-  }
-  40% {
-    -webkit-transform: scale(0.9);
-    transform: scale(0.9);
-  }
-  100% {
-    -webkit-transform: scale(1);
     transform: scale(1);
   }
 }
 .fd-zone.over .upload-indicator .image {
-  -webkit-animation: uploadIndicator 1.5s infinite;
   animation: uploadIndicator 1.5s infinite;
 }
 .queue-view {
@@ -249,12 +231,9 @@
   padding: 5px;
   box-shadow: 0 -2px 5px 0 rgba(0, 0, 0, 0.16), 0 -2px 10px 0 rgba(0, 0, 0, 0.12);
   overflow: hidden;
-  transition: -webkit-transform 0.4s;
   transition: transform 0.4s;
-  transition: transform 0.4s, -webkit-transform 0.4s;
 }
 .queue-view.done {
-  -webkit-transform: translateY(100%);
   transform: translateY(100%);
 }
 .queue-view .queue-file {

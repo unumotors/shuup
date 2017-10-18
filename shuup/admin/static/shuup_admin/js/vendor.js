@@ -41425,14 +41425,14 @@ return utils;
 }));
 
 /**
- * Super simple wysiwyg editor v0.8.6
+ * Super simple wysiwyg editor v0.8.8
  * http://summernote.org/
  *
  * summernote.js
  * Copyright 2013- Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2017-07-16T16:33Z
+ * Date: 2017-09-09T11:03Z
  */
 (function (factory) {
   /* global define */
@@ -41491,18 +41491,32 @@ return utils;
   var isEdge = /Edge\/\d+/.test(userAgent);
 
   var hasCodeMirror = !!window.CodeMirror;
-  if (!hasCodeMirror && isSupportAmd && typeof require !== 'undefined') {
-    if (typeof require.resolve !== 'undefined') {
+  if (!hasCodeMirror && isSupportAmd) {
+    // Webpack
+    if (typeof __webpack_require__ === 'function') { // jshint ignore:line
       try {
         // If CodeMirror can't be resolved, `require.resolve` will throw an
         // exception and `hasCodeMirror` won't be set to `true`.
         require.resolve('codemirror');
         hasCodeMirror = true;
       } catch (e) {
-        // Do nothing.
+        // do nothing
       }
-    } else if (typeof eval('require').specified !== 'undefined') {
-      hasCodeMirror = eval('require').specified('codemirror');
+    } else if (typeof require !== 'undefined') {
+      // Browserify
+      if (typeof require.resolve !== 'undefined') {
+        try {
+          // If CodeMirror can't be resolved, `require.resolve` will throw an
+          // exception and `hasCodeMirror` won't be set to `true`.
+          require.resolve('codemirror');
+          hasCodeMirror = true;
+        } catch (e) {
+          // do nothing
+        }
+      // Almond/Require
+      } else if (typeof require.specified !== 'undefined') {
+        hasCodeMirror = require.specified('codemirror');
+      }
     }
   }
 
@@ -43354,6 +43368,10 @@ return utils;
     $node.html(markup);
   });
 
+  var dropdownButtonContents = function (contents, options) {
+    return contents + ' ' + icon(options.icons.caret, 'span');
+  };
+
   var dropdownCheck = renderer.create('<div class="dropdown-menu note-check">', function ($node, options) {
     var markup = $.isArray(options.items) ? options.items.map(function (item) {
       var value = (typeof item === 'string') ? item : (item.value || '');
@@ -43384,11 +43402,13 @@ return utils;
     }
     $node.html(contents.join(''));
 
-    $node.find('.note-color-btn').tooltip({
-      container: 'body',
-      trigger: 'hover',
-      placement: 'bottom'
-    });
+    if (options.tooltip) {
+      $node.find('.note-color-btn').tooltip({
+        container: 'body',
+        trigger: 'hover',
+        placement: 'bottom'
+      });
+    }
   });
 
   var dialog = renderer.create('<div class="modal" aria-hidden="false" tabindex="-1"/>', function ($node, options) {
@@ -43428,6 +43448,16 @@ return utils;
     }
   });
 
+  var checkbox = renderer.create('<div class="checkbox"></div>', function ($node, options) {
+      $node.html([
+          ' <label' + (options.id ? ' for="' + options.id + '"' : '') + '>',
+          ' <input type="checkbox"' + (options.id ? ' id="' + options.id + '"' : ''),
+          (options.checked ? ' checked' : '') + '/>',
+          (options.text ? options.text : ''),
+          '</label>'
+      ].join(''));
+  });
+
   var icon = function (iconClassName, tagName) {
     tagName = tagName || 'i';
     return '<' + tagName + ' class="' + iconClassName + '"/>';
@@ -43444,10 +43474,12 @@ return utils;
     airEditable: airEditable,
     buttonGroup: buttonGroup,
     dropdown: dropdown,
+    dropdownButtonContents: dropdownButtonContents,
     dropdownCheck: dropdownCheck,
     palette: palette,
     dialog: dialog,
     popover: popover,
+    checkbox: checkbox,
     icon: icon,
     options: {},
 
@@ -43697,6 +43729,7 @@ return utils;
       'TAB': 9,
       'ENTER': 13,
       'SPACE': 32,
+      'DELETE': 46,
 
       // Arrow
       'LEFT': 37,
@@ -43747,7 +43780,8 @@ return utils;
           keyMap.BACKSPACE,
           keyMap.TAB,
           keyMap.ENTER,
-          keyMap.SPACE
+          keyMap.SPACE,
+          keyMap.DELETE
         ], keyCode);
       },
       /**
@@ -45291,7 +45325,7 @@ return utils;
       var cellIndex = recoverCellIndex(row.rowIndex, cell.cellIndex);
       var cellHasColspan = (cell.colSpan > 1);
       var cellHasRowspan = (cell.rowSpan > 1);
-      var isThisSelectedCell = (row.rowIndex === _startPoint.rowPos && cell.cellIndex === _startPoint.colPos); 
+      var isThisSelectedCell = (row.rowIndex === _startPoint.rowPos && cell.cellIndex === _startPoint.colPos);
       setVirtualTablePosition(row.rowIndex, cellIndex, row, cell, cellHasRowspan, cellHasColspan, false);
 
       // Add span rows to virtual Table.
@@ -45376,7 +45410,7 @@ return utils;
         case TableResultAction.where.Column:
           if (cell.isColSpan) {
             return TableResultAction.resultAction.SumSpanCount;
-          } else if(cell.isRowSpan && cell.isVirtual) {
+          } else if (cell.isRowSpan && cell.isVirtual) {
             return TableResultAction.resultAction.Ignore;
           }
           break;
@@ -45819,7 +45853,7 @@ return utils;
       var changeEventName = agent.isMSIE ? 'DOMCharacterDataModified DOMSubtreeModified DOMNodeInserted' : 'input';
       $editable.on(changeEventName, func.debounce(function () {
         context.triggerEvent('change', $editable.html());
-      }, 250));
+      }, 100));
 
       $editor.on('focusin', function (event) {
         context.triggerEvent('focusin', event);
@@ -45995,7 +46029,7 @@ return utils;
     var commands = ['bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript',
                     'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull',
                     'formatBlock', 'removeFormat',
-                    'backColor', 'foreColor', 'fontName'];
+                    'backColor', 'fontName'];
 
     for (var idx = 0, len = commands.length; idx < len; idx ++) {
       this[commands[idx]] = (function (sCmd) {
@@ -46417,6 +46451,16 @@ return utils;
     });
 
     /**
+     * Set foreground color
+     *
+     * @param {String} colorCode foreground color code
+     */
+    this.foreColor = this.wrapCommand(function (colorInfo) {
+      document.execCommand('styleWithCSS', false, true);
+      document.execCommand('foreColor', false, colorInfo);
+    });
+
+    /**
      * insert Table
      *
      * @param {String} dimension of table (ex : "5x5")
@@ -46505,6 +46549,8 @@ return utils;
      */
     this.floatMe = this.wrapCommand(function (value) {
       var $target = $(this.restoreTarget());
+      $target.toggleClass('note-float-left', value === 'left');
+      $target.toggleClass('note-float-right', value === 'right');
       $target.css('float', value);
     });
 
@@ -47013,6 +47059,9 @@ return utils;
       },
       'summernote.disable': function () {
         self.hide();
+      },
+      'summernote.codeview.toggled': function () {
+        self.update();
       }
     };
 
@@ -47063,6 +47112,12 @@ return utils;
           }
         }
       });
+
+      // Listen for scrolling on the handle overlay.
+      this.$handle.on('wheel', function (e) {
+        e.preventDefault();
+        self.update();
+      });
     };
 
     this.destroy = function () {
@@ -47081,12 +47136,16 @@ return utils;
 
       if (isImage) {
         var $image = $(target);
-        var pos = $image.position();
+        var position = $image.position();
+        var pos = {
+          left: position.left + parseInt($image.css('marginLeft'), 10),
+          top: position.top + parseInt($image.css('marginTop'), 10)
+        };
 
-        // include margin
+        // exclude margin
         var imageSize = {
-          w: $image.outerWidth(true),
-          h: $image.outerHeight(true)
+          w: $image.outerWidth(false),
+          h: $image.outerHeight(false)
         };
 
         $selection.css({
@@ -47215,6 +47274,8 @@ return utils;
       this.$placeholder.on('click', function () {
         context.invoke('focus');
       }).text(options.placeholder).prependTo($editingArea);
+
+      this.update();
     };
 
     this.destroy = function () {
@@ -47281,7 +47342,7 @@ return utils;
         return ui.buttonGroup([
           ui.button({
             className: 'dropdown-toggle',
-            contents: ui.icon(options.icons.magic) + ' ' + ui.icon(options.icons.caret, 'span'),
+            contents: ui.dropdownButtonContents(ui.icon(options.icons.magic), options),
             tooltip: lang.style.style,
             data: {
               toggle: 'dropdown'
@@ -47374,7 +47435,7 @@ return utils;
         return ui.buttonGroup([
           ui.button({
             className: 'dropdown-toggle',
-            contents: '<span class="note-current-fontname"/> ' + ui.icon(options.icons.caret, 'span'),
+            contents: ui.dropdownButtonContents('<span class="note-current-fontname"/>', options),
             tooltip: lang.font.name,
             data: {
               toggle: 'dropdown'
@@ -47396,7 +47457,7 @@ return utils;
         return ui.buttonGroup([
           ui.button({
             className: 'dropdown-toggle',
-            contents: '<span class="note-current-fontsize"/>' + ui.icon(options.icons.caret, 'span'),
+            contents: ui.dropdownButtonContents('<span class="note-current-fontsize"/>', options),
             tooltip: lang.font.size,
             data: {
               toggle: 'dropdown'
@@ -47406,7 +47467,7 @@ return utils;
             className: 'dropdown-fontsize',
             checkClassName: options.icons.menuCheck,
             items: options.fontSizes,
-            click: context.createInvokeHandler('editor.fontSize')
+            click: context.createInvokeHandlerAndUpdateState('editor.fontSize')
           })
         ]).render();
       });
@@ -47434,7 +47495,7 @@ return utils;
             }),
             ui.button({
               className: 'dropdown-toggle',
-              contents: ui.icon(options.icons.caret, 'span'),
+              contents: ui.dropdownButtonContents('', options),
               tooltip: lang.color.more,
               data: {
                 toggle: 'dropdown'
@@ -47442,33 +47503,32 @@ return utils;
             }),
             ui.dropdown({
               items: [
-                '<li>',
-                '<div class="btn-group">',
+                '<div class="note-palette">',
                 '  <div class="note-palette-title">' + lang.color.background + '</div>',
                 '  <div>',
-                '    <button type="button" class="note-color-reset btn btn-default" data-event="backColor" data-value="inherit">',
+                '    <button type="button" class="note-color-reset btn btn-light" data-event="backColor" data-value="inherit">',
                 lang.color.transparent,
                 '    </button>',
                 '  </div>',
                 '  <div class="note-holder" data-event="backColor"/>',
                 '</div>',
-                '<div class="btn-group">',
+                '<div class="note-palette">',
                 '  <div class="note-palette-title">' + lang.color.foreground + '</div>',
                 '  <div>',
-                '    <button type="button" class="note-color-reset btn btn-default" data-event="removeFormat" data-value="foreColor">',
+                '    <button type="button" class="note-color-reset btn btn-light" data-event="removeFormat" data-value="foreColor">',
                 lang.color.resetToDefault,
                 '    </button>',
                 '  </div>',
                 '  <div class="note-holder" data-event="foreColor"/>',
-                '</div>',
-                '</li>'
+                '</div>'
               ].join(''),
               callback: function ($dropdown) {
                 $dropdown.find('.note-holder').each(function () {
                   var $holder = $(this);
                   $holder.append(ui.palette({
                     colors: options.colors,
-                    eventName: $holder.data('event')
+                    eventName: $holder.data('event'),
+                    tooltip: options.tooltip
                   }).render());
                 });
               },
@@ -47555,7 +47615,7 @@ return utils;
         return ui.buttonGroup([
           ui.button({
             className: 'dropdown-toggle',
-            contents: ui.icon(options.icons.alignLeft) + ' ' + ui.icon(options.icons.caret, 'span'),
+            contents: ui.dropdownButtonContents(ui.icon(options.icons.alignLeft), options),
             tooltip: lang.paragraph.paragraph,
             data: {
               toggle: 'dropdown'
@@ -47578,7 +47638,7 @@ return utils;
         return ui.buttonGroup([
           ui.button({
             className: 'dropdown-toggle',
-            contents: ui.icon(options.icons.textHeight) + ' ' + ui.icon(options.icons.caret, 'span'),
+            contents: ui.dropdownButtonContents(ui.icon(options.icons.textHeight), options),
             tooltip: lang.font.height,
             data: {
               toggle: 'dropdown'
@@ -47597,7 +47657,7 @@ return utils;
         return ui.buttonGroup([
           ui.button({
             className: 'dropdown-toggle',
-            contents: ui.icon(options.icons.table) + ' ' + ui.icon(options.icons.caret, 'span'),
+            contents: ui.dropdownButtonContents(ui.icon(options.icons.table), options),
             tooltip: lang.table.table,
             data: {
               toggle: 'dropdown'
@@ -47870,9 +47930,14 @@ return utils;
       }
     };
 
-    this.updateCurrentStyle = function () {
+    /**
+     * @param {jQuery} [$container]
+     */
+    this.updateCurrentStyle = function ($container) {
+      var $cont = $container || $toolbar;
+      
       var styleInfo = context.invoke('editor.currentStyle');
-      this.updateBtnStates({
+      this.updateBtnStates($cont, {
         '.note-btn-bold': function () {
           return styleInfo['font-bold'] === 'bold';
         },
@@ -47901,27 +47966,29 @@ return utils;
         });
         var fontName = list.find(fontNames, self.isFontInstalled);
 
-        $toolbar.find('.dropdown-fontname li a').each(function () {
+        $cont.find('.dropdown-fontname a').each(function () {
+          var $item = $(this);
           // always compare string to avoid creating another func.
-          var isChecked = ($(this).data('value') + '') === (fontName + '');
-          this.className = isChecked ? 'checked' : '';
+          var isChecked = ($item.data('value') + '') === (fontName + '');
+          $item.toggleClass('checked', isChecked);
         });
-        $toolbar.find('.note-current-fontname').text(fontName);
+        $cont.find('.note-current-fontname').text(fontName);
       }
 
       if (styleInfo['font-size']) {
         var fontSize = styleInfo['font-size'];
-        $toolbar.find('.dropdown-fontsize li a').each(function () {
+        $cont.find('.dropdown-fontsize a').each(function () {
+          var $item = $(this);
           // always compare with string to avoid creating another func.
-          var isChecked = ($(this).data('value') + '') === (fontSize + '');
-          this.className = isChecked ? 'checked' : '';
+          var isChecked = ($item.data('value') + '') === (fontSize + '');
+          $item.toggleClass('checked', isChecked);
         });
-        $toolbar.find('.note-current-fontsize').text(fontSize);
+        $cont.find('.note-current-fontsize').text(fontSize);
       }
 
       if (styleInfo['line-height']) {
         var lineHeight = styleInfo['line-height'];
-        $toolbar.find('.dropdown-line-height li a').each(function () {
+        $cont.find('.dropdown-line-height li a').each(function () {
           // always compare with string to avoid creating another func.
           var isChecked = ($(this).data('value') + '') === (lineHeight + '');
           this.className = isChecked ? 'checked' : '';
@@ -47929,9 +47996,9 @@ return utils;
       }
     };
 
-    this.updateBtnStates = function (infos) {
+    this.updateBtnStates = function ($container, infos) {
       $.each(infos, function (selector, pred) {
-        ui.toggleBtnActive($toolbar.find(selector), pred());
+        ui.toggleBtnActive($container.find(selector), pred());
       });
     };
 
@@ -47982,6 +48049,7 @@ return utils;
     var ui = $.summernote.ui;
 
     var $note = context.layoutInfo.note;
+    var $editor = context.layoutInfo.editor;
     var $toolbar = context.layoutInfo.toolbar;
     var options = context.options;
 
@@ -48002,6 +48070,8 @@ return utils;
         $toolbar.appendTo(options.toolbarContainer);
       }
 
+      this.changeContainer(false);
+
       $note.on('summernote.keyup summernote.mouseup summernote.change', function () {
         context.invoke('buttons.updateCurrentStyle');
       });
@@ -48013,8 +48083,20 @@ return utils;
       $toolbar.children().remove();
     };
 
+    this.changeContainer = function (isFullscreen) {
+      if (isFullscreen) {
+        $toolbar.prependTo($editor);
+      } else {
+        if (options.toolbarContainer) {
+          $toolbar.appendTo(options.toolbarContainer);
+        }
+      }
+    };
+
     this.updateFullscreen = function (isFullscreen) {
       ui.toggleBtnActive($toolbar.find('.btn-fullscreen'), isFullscreen);
+
+      this.changeContainer(isFullscreen);
     };
 
     this.updateCodeview = function (isCodeview) {
@@ -48054,22 +48136,22 @@ return utils;
     this.initialize = function () {
       var $container = options.dialogsInBody ? $(document.body) : $editor;
 
-      var body = '<div class="form-group">' +
-                   '<label>' + lang.link.textToDisplay + '</label>' +
-                   '<input class="note-link-text form-control" type="text" />' +
+      var body = '<div class="form-group note-form-group">' +
+                   '<label class="note-form-label">' + lang.link.textToDisplay + '</label>' +
+                   '<input class="note-link-text form-control '+
+                   ' note-form-control  note-input" type="text" />' +
                  '</div>' +
-                 '<div class="form-group">' +
-                   '<label>' + lang.link.url + '</label>' +
-                   '<input class="note-link-url form-control" type="text" value="http://" />' +
+                 '<div class="form-group note-form-group">' +
+                   '<label class="note-form-label">' + lang.link.url + '</label>' +
+                   '<input class="note-link-url form-control note-form-control ' +
+                   'note-input" type="text" value="http://" />' +
                  '</div>' +
-                 (!options.disableLinkTarget ?
-                   '<div class="checkbox">' +
-                     '<label for="sn-checkbox-open-in-new-window">' + 
-                       '<input type="checkbox" id="sn-checkbox-open-in-new-window" checked />' + lang.link.openInNewWindow +
-                     '</label>' +
-                   '</div>' : ''
-                 );
-      var footer = '<button href="#" class="btn btn-primary note-link-btn disabled" disabled>' + lang.link.insert + '</button>';
+      (!options.disableLinkTarget ?
+          $('<div/>').append(ui.checkbox({ id: 'sn-checkbox-open-in-new-window', text: lang.link.openInNewWindow, checked: true }).render())
+              .html()
+          : '');
+      var footer = '<button href="#" class="btn btn-primary note-btn note-btn-primary ' +
+      'note-link-btn disabled" disabled>' + lang.link.insert + '</button>';
 
       this.$dialog = ui.dialog({
         className: 'link-dialog',
@@ -48165,7 +48247,7 @@ return utils;
               text: $linkText.val(),
               isNewWindow: $openInNewWindow.is(':checked')
             });
-            self.$dialog.modal('hide');
+            ui.hideDialog(self.$dialog);
           });
         });
 
@@ -48224,11 +48306,11 @@ return utils;
       this.$popover = ui.popover({
         className: 'note-link-popover',
         callback: function ($node) {
-          var $content = $node.find('.popover-content');
+          var $content = $node.find('.popover-content,.note-popover-content');
           $content.prepend('<span><a target="_blank"></a>&nbsp;</span>');
         }
       }).render().appendTo('body');
-      var $content = this.$popover.find('.popover-content');
+      var $content = this.$popover.find('.popover-content,.note-popover-content');
 
       context.invoke('buttons.build', $content, options.popover.link);
     };
@@ -48285,16 +48367,19 @@ return utils;
         imageLimitation = '<small>' + lang.image.maximumFileSize + ' : ' + readableSize + '</small>';
       }
 
-      var body = '<div class="form-group note-group-select-from-files">' +
-                   '<label>' + lang.image.selectFromFiles + '</label>' +
-                   '<input class="note-image-input form-control" type="file" name="files" accept="image/*" multiple="multiple" />' +
+      var body = '<div class="form-group note-form-group note-group-select-from-files">' +
+                   '<label class="note-form-label">' + lang.image.selectFromFiles + '</label>' +
+                   '<input class="note-image-input form-control note-form-control note-input" '+
+                   ' type="file" name="files" accept="image/*" multiple="multiple" />' +
                    imageLimitation +
-                 '</div>' +
+                 '</div>' + 
                  '<div class="form-group note-group-image-url" style="overflow:auto;">' +
-                   '<label>' + lang.image.url + '</label>' +
-                   '<input class="note-image-url form-control col-md-12" type="text" />' +
+                   '<label class="note-form-label">' + lang.image.url + '</label>' +
+                   '<input class="note-image-url form-control note-form-control note-input ' +
+                   ' col-md-12" type="text" />' +
                  '</div>';
-      var footer = '<button href="#" class="btn btn-primary note-image-btn disabled" disabled>' + lang.image.insert + '</button>';
+      var footer = '<button href="#" class="btn btn-primary note-btn note-btn-primary ' +
+      'note-image-btn disabled" disabled>' + lang.image.insert + '</button>';
 
       this.$dialog = ui.dialog({
         title: lang.image.insert,
@@ -48395,6 +48480,8 @@ return utils;
     var self = this;
     var ui = $.summernote.ui;
 
+    var $editable = context.layoutInfo.editable;
+    var editable = $editable[0];
     var options = context.options;
 
     this.events = {
@@ -48411,7 +48498,7 @@ return utils;
       this.$popover = ui.popover({
         className: 'note-image-popover'
       }).render().appendTo('body');
-      var $content = this.$popover.find('.popover-content');
+      var $content = this.$popover.find('.popover-content,.note-popover-content');
 
       context.invoke('buttons.build', $content, options.popover.image);
     };
@@ -48423,10 +48510,12 @@ return utils;
     this.update = function (target) {
       if (dom.isImg(target)) {
         var pos = dom.posFromPlaceholder(target);
+        var posEditor = dom.posFromPlaceholder(editable);
+
         this.$popover.css({
           display: 'block',
           left: pos.left,
-          top: pos.top
+          top: Math.min(pos.top, posEditor.top)
         });
       } else {
         this.hide();
@@ -48464,7 +48553,7 @@ return utils;
       this.$popover = ui.popover({
         className: 'note-table-popover'
       }).render().appendTo('body');
-      var $content = this.$popover.find('.popover-content');
+      var $content = this.$popover.find('.popover-content,.note-popover-content');
 
       context.invoke('buttons.build', $content, options.popover.table);
 
@@ -48515,11 +48604,13 @@ return utils;
     this.initialize = function () {
       var $container = options.dialogsInBody ? $(document.body) : $editor;
 
-      var body = '<div class="form-group row-fluid">' +
-          '<label>' + lang.video.url + ' <small class="text-muted">' + lang.video.providers + '</small></label>' +
-          '<input class="note-video-url form-control span12" type="text" />' +
+      var body = '<div class="form-group note-form-group row-fluid">' +
+          '<label class="note-form-label">' + lang.video.url + ' <small class="text-muted">' + lang.video.providers + '</small></label>' +
+          '<input class="note-video-url form-control  note-form-control note-input span12" ' + 
+          ' type="text" />' +
           '</div>';
-      var footer = '<button href="#" class="btn btn-primary note-video-btn disabled" disabled>' + lang.video.insert + '</button>';
+      var footer = '<button href="#" class="btn btn-primary note-btn note-btn-primary ' + 
+      ' note-video-btn disabled" disabled>' + lang.video.insert + '</button>';
 
       this.$dialog = ui.dialog({
         title: lang.video.insert,
@@ -48721,7 +48812,7 @@ return utils;
 
       var body = [
         '<p class="text-center">',
-        '<a href="http://summernote.org/" target="_blank">Summernote 0.8.6</a> · ',
+        '<a href="http://summernote.org/" target="_blank">Summernote 0.8.8</a> · ',
         '<a href="https://github.com/summernote/summernote" target="_blank">Project</a> · ',
         '<a href="https://github.com/summernote/summernote/issues" target="_blank">Issues</a>',
         '</p>'
@@ -48733,7 +48824,7 @@ return utils;
         body: this.createShortCutList(),
         footer: body,
         callback: function ($node) {
-          $node.find('.modal-body').css({
+          $node.find('.modal-body,.note-modal-body').css({
             'max-height': 300,
             'overflow': 'scroll'
           });
@@ -48825,6 +48916,7 @@ return utils;
             left: Math.max(bnd.left + bnd.width / 2, 0) - AIR_MODE_POPOVER_X_OFFSET,
             top: bnd.top + bnd.height
           });
+          context.invoke('buttons.updateCurrentStyle', this.$popover);
         }
       } else {
         this.hide();
@@ -48873,7 +48965,7 @@ return utils;
 
       this.$popover.hide();
 
-      this.$content = this.$popover.find('.popover-content');
+      this.$content = this.$popover.find('.popover-content,.note-popover-content');
 
       this.$content.on('click', '.note-hint-item', function () {
         self.$content.find('.active').removeClass('active');
@@ -49068,7 +49160,7 @@ return utils;
 
 
   $.summernote = $.extend($.summernote, {
-    version: '0.8.6',
+    version: '0.8.8',
     ui: ui,
     dom: dom,
 
@@ -49296,7 +49388,7 @@ return utils;
         'link': 'note-icon-link',
         'unlink': 'note-icon-chain-broken',
         'magic': 'note-icon-magic',
-        'menuCheck': 'note-icon-check',
+        'menuCheck': 'note-icon-menu-check',
         'minus': 'note-icon-minus',
         'orderedlist': 'note-icon-orderedlist',
         'pencil': 'note-icon-pencil',

@@ -20,7 +20,6 @@ function activateSelect($select, model, attrs={}) {
             url: "/sa/select",
             dataType: "json",
             data: function(params) {
-                debugger
                 return {model: model, search: params.term, label_attr: attrs.label};
             },
             processResults: function (data) {

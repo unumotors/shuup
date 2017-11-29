@@ -28,6 +28,7 @@ class PaymentStates(Enum):
     REFUSED = 6
     MANUAL = 7
     CHARGED_BACK = 8
+    REINSTATED = 9
     ERROR = 10
 
     class Labels:
@@ -40,6 +41,7 @@ class PaymentStates(Enum):
         REFUSED = _('Refused')
         MANUAL = _('Manual')
         CHARGED_BACK = _('Charged back')
+        REINSTATED = _('Reinstated')
         ERROR = _('Error')
 
 

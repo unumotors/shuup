@@ -326,7 +326,7 @@ class Coupon(models.Model):
     name_field = "code"  # TODO: Document me
     search_fields = ["code"]    # used by Select2Multiple to know which fields use to search by
 
-    code = models.CharField(max_length=30)
+    code = models.CharField(max_length=30, unique=True)
 
     usage_limit_customer = models.PositiveIntegerField(
         blank=True, null=True,

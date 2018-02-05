@@ -272,7 +272,8 @@ class BasketCampaign(Campaign):
         queryset = cls.objects.filter(active=True, shop=basket.shop)
         if exclude_condition_ids:
             queryset = queryset.exclude(conditions__id__in=exclude_condition_ids)
-        for campaign in queryset.prefetch_related("conditions"):
+
+        for campaign in queryset.prefetch_related("conditions").select_related("coupon"):
             if campaign.rules_match(basket, lines):
                 matching.append(campaign)
         return matching
